@@ -383,11 +383,6 @@ app/
     HoldingRepository.scala
     PriceCacheRepository.scala
 
-  views/
-    index.scala.html
-    login.scala.html
-    dashboard.scala.html
-
 conf/
   application.conf
   routes
