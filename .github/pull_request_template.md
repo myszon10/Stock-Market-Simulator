@@ -1,16 +1,17 @@
-**Opis**
+**Description**
 
-_Krótko opisz, co wprowadza ten Pull Request. Jakie zadanie realizuje, jak wpisuje się w architekturę i co jest głównym celem zmiany._
+_Briefly describe what this Pull Request introduces. What task does it implement,
+and what is the main goal of the change._
 
-**Zmiany**
+**Changes**
 
-_Wypunktuj najważniejsze zmiany techniczne wprowadzone w kodzie:_
+_List the key technical changes introduced in the code:_
 *   _..._
 *   _..._
 *   _..._
 
-**Powiązane zadania**
+**Related Work Items**
 
-_Zlinkuj zadania z YouTrack, których dotyczy ten PR:_
-*   Closes [TASK-ID-TITLE](_Tutaj_wklej_link_do_YouTrack_)
-*   Refs [TASK-ID-TITLE](_Tutaj_wklej_link_do_YouTrack_)
+_Link the YouTrack tasks related to this PR:_
+*   Closes [TASK-ID-TITLE](_Here_paste_link_to_YouTrack_)
+*   Refs [TASK-ID-TITLE](_Here_paste_link_to_YouTrack_)
