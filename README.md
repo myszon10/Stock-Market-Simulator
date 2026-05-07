@@ -28,3 +28,6 @@ Market data will be fetched from **Finnhub API**.
 
 ## Status
 Project in early development.
+
+## Run
+In order to run frontend application go to frontend folder and write in the console npm run dev
