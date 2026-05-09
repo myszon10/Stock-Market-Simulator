@@ -1,20 +1,27 @@
 package controllers
 
 import org.scalatestplus.play.PlaySpec
+import play.api.Configuration
 import play.api.libs.json.JsValue
-import play.api.test.Helpers.defaultAwaitTimeout
 import play.api.test.FakeRequest
 import play.api.test.Helpers.GET
 import play.api.test.Helpers.NOT_FOUND
 import play.api.test.Helpers.OK
 import play.api.test.Helpers.contentAsJson
+import play.api.test.Helpers.defaultAwaitTimeout
 import play.api.test.Helpers.status
 import play.api.test.Helpers.stubControllerComponents
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class StockControllerSpec extends PlaySpec:
-    private val controller = new StockController(stubControllerComponents())
+    private val configuration = Configuration.from(
+        Map(
+            "marketData.mode" -> "mock"
+        )
+    )
+    
+    private val controller = new StockController(stubControllerComponents(), configuration)
 
     "StockController stocks" should {
         "return list of supported stocks" in {

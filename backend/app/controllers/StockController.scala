@@ -3,6 +3,7 @@ package controllers
 import models.Quote
 import models.Stock
 import models.errors.MarketDataError
+import play.api.Configuration
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.mvc.AbstractController
@@ -10,13 +11,19 @@ import play.api.mvc.Action
 import play.api.mvc.AnyContent
 import play.api.mvc.ControllerComponents
 import play.api.mvc.Result
-import services.{MarketDataService, MockMarketDataService, StockCatalog}
+import services.FinnhubMarketDataService
+import services.MarketDataService
+import services.MockMarketDataService
+import services.StockCatalog
 
+import java.util.Locale
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
 
-class StockController @Inject()(cc: ControllerComponents)(using ec: ExecutionContext) extends AbstractController(cc):
+class StockController @Inject() (
+                                  cc: ControllerComponents,
+                                  configuration: Configuration
+                                )(using ec: ExecutionContext) extends AbstractController(cc):
 
     private val marketDataService: MarketDataService = MockMarketDataService()
 
@@ -30,6 +37,26 @@ class StockController @Inject()(cc: ControllerComponents)(using ec: ExecutionCon
             case Left(error) => marketDataErrorToResult(error)
         }
     }
+
+    private def createMarketDataService(): MarketDataService =
+        val mode = configuration
+          .getOptional[String]("marketData.mode")
+          .getOrElse("mock")
+          .trim
+          .toLowerCase(Locale.ROOT)
+
+        mode match {
+            case "mock" => MockMarketDataService()
+            case "finnhub" =>
+                val apiKey = configuration
+                    .getOptional[String]("finnhub.apiKey")
+                    .map(_.trim)
+                    .filter(_.nonEmpty)
+
+                FinnhubMarketDataService(apiKey)
+
+            case _ => MockMarketDataService()
+        }
 
     private def stockToJson(stock: Stock): JsValue =
         Json.obj(
