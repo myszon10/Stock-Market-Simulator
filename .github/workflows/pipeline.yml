@@ -1,0 +1,45 @@
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: simulator_user
+          POSTGRES_PASSWORD: simulator_pass
+          POSTGRES_DB: stock_market
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: temurin
+          cache: sbt
+
+      - uses: sbt/setup-sbt@v1
+
+      - name: Run tests
+        working-directory: backend
+        run: sbt test
+
+      - uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: backend/target/test-reports/**/*.xml
