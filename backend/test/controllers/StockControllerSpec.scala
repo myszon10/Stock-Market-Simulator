@@ -1,8 +1,10 @@
 package controllers
 
+import controllers.actions.{AuthenticatedAction, UserRequest}
 import org.scalatestplus.play.PlaySpec
 import play.api.Configuration
 import play.api.libs.json.JsValue
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.GET
 import play.api.test.Helpers.NOT_FOUND
@@ -11,17 +13,27 @@ import play.api.test.Helpers.contentAsJson
 import play.api.test.Helpers.defaultAwaitTimeout
 import play.api.test.Helpers.status
 import play.api.test.Helpers.stubControllerComponents
+import utils.BaseIntegrationSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-class StockControllerSpec extends PlaySpec:
+class StockControllerSpec extends BaseIntegrationSpec:
     private val configuration = Configuration.from(
         Map(
             "marketData.mode" -> "mock"
         )
     )
-    
-    private val controller = new StockController(stubControllerComponents(), configuration)
+
+    private val cc = stubControllerComponents()
+
+    private val authAction = new AuthenticatedAction(cc.parsers) {
+        override protected def refine[A](request: play.api.mvc.Request[A]): Future[Either[Result, UserRequest[A]]] = {
+            Future.successful(Right(new UserRequest(1L, "testUser", request)))
+        }
+    }
+
+    private val controller = new StockController(cc, configuration, authAction)
 
     "StockController stocks" should {
         "return list of supported stocks" in {
