@@ -1,5 +1,6 @@
 package controllers
 
+import controllers.actions.AuthenticatedAction
 import models.Quote
 import models.Stock
 import models.errors.MarketDataError
@@ -22,16 +23,17 @@ import scala.concurrent.ExecutionContext
 
 class StockController @Inject() (
                                   cc: ControllerComponents,
-                                  configuration: Configuration
+                                  configuration: Configuration,
+                                  authenticatedAction: AuthenticatedAction
                                 )(using ec: ExecutionContext) extends AbstractController(cc):
 
     private val marketDataService: MarketDataService = MockMarketDataService()
 
-    def stocks(): Action[AnyContent] = Action {
+    def stocks(): Action[AnyContent] = authenticatedAction {
         Ok(Json.toJson(StockCatalog.all.map(stockToJson)))
     }
 
-    def quote(symbol: String): Action[AnyContent] = Action.async {
+    def quote(symbol: String): Action[AnyContent] = authenticatedAction.async {
         marketDataService.getQuote(symbol).map {
             case Right(quote) => Ok(quoteToJson(quote))
             case Left(error) => marketDataErrorToResult(error)

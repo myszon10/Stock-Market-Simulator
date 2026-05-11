@@ -16,8 +16,10 @@ class UserRepositorySpec extends BaseIntegrationSpec {
   "UserRepository" should {
 
     "create a new user and retrieve it by ID" in {
-      val createdUser = Await.result(repo.create(testUsername, testPasswordHash, initialBalance), 5.seconds)
+      val createdUserOpt = Await.result(repo.create(testUsername, testPasswordHash, initialBalance), 5.seconds)
 
+      createdUserOpt.mustBe(defined)
+      val createdUser = createdUserOpt.get
       createdUser.id.must(be > 0L)
       createdUser.username.mustBe(testUsername)
 
@@ -28,9 +30,11 @@ class UserRepositorySpec extends BaseIntegrationSpec {
     }
 
     "find a user by their existing username" in {
-      val createdUser = Await.result(repo.create(testUsername, testPasswordHash, initialBalance), 5.seconds)
+      val createdUserOpt = Await.result(repo.create(testUsername, testPasswordHash, initialBalance), 5.seconds)
       val foundUserOpt = Await.result(repo.findByUsername(testUsername), 5.seconds)
 
+      createdUserOpt.mustBe(defined)
+      val createdUser = createdUserOpt.get
       foundUserOpt.mustBe(defined)
       foundUserOpt.get.id.mustBe(createdUser.id)
     }
@@ -41,9 +45,11 @@ class UserRepositorySpec extends BaseIntegrationSpec {
     }
 
     "correctly update a user's cash balance" in {
-      val createdUser = Await.result(repo.create(testUsername, testPasswordHash, initialBalance), 5.seconds)
+      val createdUserOpt = Await.result(repo.create(testUsername, testPasswordHash, initialBalance), 5.seconds)
       val newBalance = BigDecimal("95000.50")
 
+      createdUserOpt.mustBe(defined)
+      val createdUser = createdUserOpt.get
       val affectedRows = Await.result(repo.updateCashBalance(createdUser.id, newBalance), 5.seconds)
       affectedRows.mustBe(1)
 

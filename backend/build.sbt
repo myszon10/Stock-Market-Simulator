@@ -16,6 +16,7 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "42.7.11",
   "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.2" % Test
 )
+libraryDependencies += "org.mindrot" % "jbcrypt" % "0.4"
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "pl.edu.pw.stockmarketsimulator.controllers._"
