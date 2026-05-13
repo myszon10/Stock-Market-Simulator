@@ -1,6 +1,7 @@
 package controllers
 
-import controllers.actions.{AuthenticatedAction, UserRequest}
+import controllers.actions.AuthenticatedAction
+import controllers.actions.UserRequest
 import org.scalatestplus.play.PlaySpec
 import play.api.Configuration
 import play.api.libs.json.JsValue
@@ -9,22 +10,16 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.GET
 import play.api.test.Helpers.NOT_FOUND
 import play.api.test.Helpers.OK
+import play.api.test.Helpers.SERVICE_UNAVAILABLE
 import play.api.test.Helpers.contentAsJson
 import play.api.test.Helpers.defaultAwaitTimeout
 import play.api.test.Helpers.status
 import play.api.test.Helpers.stubControllerComponents
-import utils.BaseIntegrationSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class StockControllerSpec extends BaseIntegrationSpec:
-    private val configuration = Configuration.from(
-        Map(
-            "marketData.mode" -> "mock"
-        )
-    )
-
+class StockControllerSpec extends PlaySpec:
     private val cc = stubControllerComponents()
 
     private val authAction = new AuthenticatedAction(cc.parsers) {
@@ -33,10 +28,18 @@ class StockControllerSpec extends BaseIntegrationSpec:
         }
     }
 
-    private val controller = new StockController(cc, configuration, authAction)
+    private def controllerWith(configuration: Configuration): StockController =
+        new StockController(cc, configuration, authAction)
+
+    private def configuration(values: (String, String)*): Configuration =
+        Configuration.from(values.toMap)
 
     "StockController stocks" should {
         "return list of supported stocks" in {
+            val controller = controllerWith(
+                configuration("marketData.mode" -> "mock")
+            )
+
             val result = controller.stocks().apply(FakeRequest(GET, "/api/stocks"))
 
             status(result) mustBe OK
@@ -55,7 +58,11 @@ class StockControllerSpec extends BaseIntegrationSpec:
     }
 
     "StockController quote" should {
-        "return quote for supported symbol" in {
+        "return quote for supported symbol in mock mode" in {
+            val controller = controllerWith(
+                configuration("marketData.mode" -> "mock")
+            )
+
             val result = controller.quote("AAPL").apply(FakeRequest(GET, "/api/stocks/AAPL/quote"))
 
             status(result) mustBe OK
@@ -67,7 +74,11 @@ class StockControllerSpec extends BaseIntegrationSpec:
             (json \ "fetchedAt").as[String] must not be empty
         }
 
-        "return quote for symbol written in lowercase" in {
+        "return quote for symbol written in lowercase in mock mode" in {
+            val controller = controllerWith(
+                configuration("marketData.mode" -> "mock")
+            )
+
             val result = controller.quote("aapl").apply(FakeRequest(GET, "/api/stocks/aapl/quote"))
 
             status(result) mustBe OK
@@ -78,7 +89,11 @@ class StockControllerSpec extends BaseIntegrationSpec:
             (json \ "price").as[BigDecimal] mustBe BigDecimal("182.45")
         }
 
-        "return 404 for unsupported symbol" in {
+        "return 404 for unsupported symbol in mock mode" in {
+            val controller = controllerWith(
+                configuration("marketData.mode" -> "mock")
+            )
+
             val result = controller.quote("XYZ").apply(FakeRequest(GET, "/api/stocks/XYZ/quote"))
 
             status(result) mustBe NOT_FOUND
@@ -87,5 +102,50 @@ class StockControllerSpec extends BaseIntegrationSpec:
 
             (json \ "error").as[String] mustBe "UNSUPPORTED_SYMBOL"
             (json \ "message").as[String] mustBe "Symbol XYZ is not supported."
+        }
+
+        "use mock mode by default when market data mode is not configured" in {
+            val controller = controllerWith(
+                configuration()
+            )
+
+            val result = controller.quote("AAPL").apply(FakeRequest(GET, "/api/stocks/AAPL/quote"))
+
+            status(result) mustBe OK
+
+            val json = contentAsJson(result)
+
+            (json \ "symbol").as[String] mustBe "AAPL"
+            (json \ "price").as[BigDecimal] mustBe BigDecimal("182.45")
+        }
+
+        "fall back to mock mode when market data mode is unknown" in {
+            val controller = controllerWith(
+                configuration("marketData.mode" -> "invalid-mode")
+            )
+
+            val result = controller.quote("AAPL").apply(FakeRequest(GET, "/api/stocks/AAPL/quote"))
+
+            status(result) mustBe OK
+
+            val json = contentAsJson(result)
+
+            (json \ "symbol").as[String] mustBe "AAPL"
+            (json \ "price").as[BigDecimal] mustBe BigDecimal("182.45")
+        }
+
+        "use Finnhub mode when market data mode is finnhub" in {
+            val controller = controllerWith(
+                configuration("marketData.mode" -> "finnhub")
+            )
+
+            val result = controller.quote("AAPL").apply(FakeRequest(GET, "/api/stocks/AAPL/quote"))
+
+            status(result) mustBe SERVICE_UNAVAILABLE
+
+            val json = contentAsJson(result)
+
+            (json \ "error").as[String] mustBe "MISSING_API_KEY"
+            (json \ "message").as[String] mustBe "Market data API key is not configured."
         }
     }

@@ -27,7 +27,7 @@ class StockController @Inject() (
                                   authenticatedAction: AuthenticatedAction
                                 )(using ec: ExecutionContext) extends AbstractController(cc):
 
-    private val marketDataService: MarketDataService = MockMarketDataService()
+    private val marketDataService: MarketDataService = createMarketDataService()
 
     def stocks(): Action[AnyContent] = authenticatedAction {
         Ok(Json.toJson(StockCatalog.all.map(stockToJson)))
