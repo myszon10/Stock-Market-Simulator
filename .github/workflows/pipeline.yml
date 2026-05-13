@@ -11,12 +11,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    env:
-      DB_URL: jdbc:postgresql://localhost:5432/stock_market
-      DB_USER: simulator_user
-      DB_PASSWORD: simulator_pass
-      MARKET_DATA_MODE: mock
-
     steps:
       - uses: actions/checkout@v4
 
@@ -28,29 +22,40 @@ jobs:
 
       - uses: sbt/setup-sbt@v1
 
-      - name: Start PostgreSQL
+      - name: Start PostgreSQL and run tests
         working-directory: backend
-        run: docker compose up -d db
-
-      - name: Wait for PostgreSQL
+        env:
+          DB_URL: jdbc:postgresql://localhost:55432/stock_market
+          DB_USER: simulator_user
+          DB_PASSWORD: simulator_pass
+          MARKET_DATA_MODE: mock
         run: |
+          docker run -d \
+            --name ci-postgres \
+            -e POSTGRES_USER=simulator_user \
+            -e POSTGRES_PASSWORD=simulator_pass \
+            -e POSTGRES_DB=stock_market \
+            -p 55432:5432 \
+            postgres:16-alpine
+
+          echo "Waiting for PostgreSQL..."
           for i in {1..30}; do
-            if docker exec stock-market-simulator-db pg_isready -U simulator_user -d stock_market; then
+            if docker exec ci-postgres pg_isready -U simulator_user -d stock_market; then
               echo "PostgreSQL is ready"
-              exit 0
+              break
             fi
 
-            echo "Waiting for PostgreSQL..."
+            if [ "$i" -eq 30 ]; then
+              echo "PostgreSQL did not become ready in time"
+              docker logs ci-postgres
+              exit 1
+            fi
+
             sleep 2
           done
 
-          echo "PostgreSQL did not become ready in time"
-          docker logs stock-market-simulator-db
-          exit 1
-
-      - name: Run tests
-        working-directory: backend
-        run: sbt test
+          docker ps
+          sbt test
 
       - uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
@@ -59,5 +64,5 @@ jobs:
 
       - name: Stop PostgreSQL
         if: always()
-        working-directory: backend
-        run: docker compose down -v
+        run: |
+          docker rm -f ci-postgres || true
