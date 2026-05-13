@@ -1,33 +1,102 @@
 # Stock-Market-Simulator
-Stock market simulator built as a group project for the Scala programming course
+Stock market simulator built as a group project for the Scala programming course.
 
-## Authors
+The application allows users to simulate investing in stocks using virtual money. It focuses on a basic portfolio flow: user account, starting balance, stock prices, buy/sell orders, portfolio, transaction history and leaderboard.
+
+
+## Team
 - Szymon Mażulis
 - Bartosz Radomski
 - Igor Oleksy
 - Maciej Rozpędek
 - Jakub Warkocki
 
-## Overview
-Stock market simulator that allows users to trade stocks using virtual money.  
-Stock prices are fetched from a real market data API.
+## Tech stack
+- Scala
+- Play Framework
+- sbt
+- PostgreSQL
+- React/Vite frontend
 
-The main part of the system will be implemented as a **Scala backend** exposing a **REST API**.
+## Project structure
+```text
+backend/ - Scala Play backend
+frontend/stock-frontend/ - React frontend
+```
 
-## Features
-- user registration and login
-- virtual starting balance
-- list of stocks with current prices
-- buying and selling stocks
-- portfolio management
-- transaction history
-- leaderboard of users
+## Backend setup
+Start the database:
+```bash
+cd backend
+docker compose up -d
+```
 
-## External API
-Market data will be fetched from **Finnhub API**.
+Run the backend:
+```bash
+sbt run
+```
+
+The backend runs on:
+```
+http://localhost:9000
+```
+
+Default database configuration:
+```
+DB_URL=jdbc:postgresql://localhost:5432/stock_market
+DB_USER=simulator_user
+DB_PASSWORD=simulator_pass
+```
+
+## Market data mode
+The backend supports two market data modes:
+```
+mock
+finnhub
+```
+
+The mode is configured with `MARKET_DATA_MODE`
+
+Mock mode is the default and does not require an API key. It is recommended for local development and demo presentations.
+
+PowerShell:
+```PowerShell
+$env:MARKET_DATA_MODE="mock"
+```
+Bash:
+```bash
+export MARKET_DATA_MODE="mock"
+sbt run
+```
+
+Finnhub mode requires an API key:
+Powershell:
+```PowerShell
+$env:MARKET_DATA_MODE="finnhub"
+$env:FINNHUB_API_KEY="your_api_key_here"
+sbt run
+```
+Bash:
+```bash
+export MARKET_DATA_MODE="finnhub"
+export FINNHUB_API_KEY="your_api_key_here"
+sbt run
+```
+
+## Frontend setup
+
+```bash
+cd frontend/stock-frontend
+npm install
+npm run dev
+```
+
+## Tests
+Run all backend tests:
+```bash
+cd backend
+sbt test
+```
 
 ## Status
-Project in early development.
-
-## Run
-In order to run frontend application go to frontend folder and write in the console npm run dev
+Project is currently in development

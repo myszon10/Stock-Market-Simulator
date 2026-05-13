@@ -10,6 +10,9 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+<<<<<<< feature/market-data-source-config
+
+=======
     services:
       postgres:
         image: postgres:16-alpine
@@ -24,6 +27,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+>>>>>>> develop
     steps:
       - uses: actions/checkout@v4
 
@@ -35,11 +39,47 @@ jobs:
 
       - uses: sbt/setup-sbt@v1
 
-      - name: Run tests
+      - name: Start PostgreSQL and run tests
         working-directory: backend
-        run: sbt test
+        env:
+          DB_URL: jdbc:postgresql://localhost:55432/stock_market
+          DB_USER: simulator_user
+          DB_PASSWORD: simulator_pass
+          MARKET_DATA_MODE: mock
+        run: |
+          docker run -d \
+            --name ci-postgres \
+            -e POSTGRES_USER=simulator_user \
+            -e POSTGRES_PASSWORD=simulator_pass \
+            -e POSTGRES_DB=stock_market \
+            -p 55432:5432 \
+            postgres:16-alpine
+
+          echo "Waiting for PostgreSQL..."
+          for i in {1..30}; do
+            if docker exec ci-postgres pg_isready -U simulator_user -d stock_market; then
+              echo "PostgreSQL is ready"
+              break
+            fi
+
+            if [ "$i" -eq 30 ]; then
+              echo "PostgreSQL did not become ready in time"
+              docker logs ci-postgres
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          docker ps
+          sbt test
 
       - uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
           files: backend/target/test-reports/**/*.xml
+
+      - name: Stop PostgreSQL
+        if: always()
+        run: |
+          docker rm -f ci-postgres || true
