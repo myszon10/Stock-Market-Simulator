@@ -11,21 +11,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: simulator_user
-          POSTGRES_PASSWORD: simulator_pass
-          POSTGRES_DB: stock_market
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U simulator_user -d stock_market"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-
     env:
       DB_URL: jdbc:postgresql://localhost:5432/stock_market
       DB_USER: simulator_user
@@ -43,6 +28,26 @@ jobs:
 
       - uses: sbt/setup-sbt@v1
 
+      - name: Start PostgreSQL
+        working-directory: backend
+        run: docker compose up -d db
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            if docker exec stock-market-simulator-db pg_isready -U simulator_user -d stock_market; then
+              echo "PostgreSQL is ready"
+              exit 0
+            fi
+
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+          echo "PostgreSQL did not become ready in time"
+          docker logs stock-market-simulator-db
+          exit 1
+
       - name: Run tests
         working-directory: backend
         run: sbt test
@@ -51,3 +56,8 @@ jobs:
         if: always()
         with:
           files: backend/target/test-reports/**/*.xml
+
+      - name: Stop PostgreSQL
+        if: always()
+        working-directory: backend
+        run: docker compose down -v
