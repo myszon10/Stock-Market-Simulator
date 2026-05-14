@@ -3,6 +3,8 @@ package controllers
 import controllers.actions.AuthenticatedAction
 import controllers.actions.UserRequest
 import org.scalatestplus.play.PlaySpec
+import models.Quote
+import repositories.PriceCacheRepository
 import play.api.Configuration
 import play.api.libs.json.JsValue
 import play.api.mvc.Result
@@ -27,9 +29,21 @@ class StockControllerSpec extends PlaySpec:
             Future.successful(Right(new UserRequest(1L, "testUser", request)))
         }
     }
+    
+    private class EmptyPriceCacheRepository extends PriceCacheRepository(null)(using global):
+        override def findBySymbol(symbol: String): Future[Option[Quote]] =
+            Future.successful(None)
+            
+        override def upsert(quote: Quote): Future[Int] =
+            Future.successful(1)
 
     private def controllerWith(configuration: Configuration): StockController =
-        new StockController(cc, configuration, authAction)
+        new StockController(
+            cc, 
+            configuration, 
+            authAction,
+            new EmptyPriceCacheRepository()
+        )
 
     private def configuration(values: (String, String)*): Configuration =
         Configuration.from(values.toMap)

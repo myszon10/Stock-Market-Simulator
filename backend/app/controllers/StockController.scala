@@ -12,6 +12,8 @@ import play.api.mvc.Action
 import play.api.mvc.AnyContent
 import play.api.mvc.ControllerComponents
 import play.api.mvc.Result
+import repositories.PriceCacheRepository
+import services.CachedMarketDataService
 import services.FinnhubMarketDataService
 import services.MarketDataService
 import services.MockMarketDataService
@@ -20,11 +22,15 @@ import services.StockCatalog
 import java.util.Locale
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.FiniteDuration
+
 
 class StockController @Inject() (
                                   cc: ControllerComponents,
                                   configuration: Configuration,
-                                  authenticatedAction: AuthenticatedAction
+                                  authenticatedAction: AuthenticatedAction,
+                                  priceCacheRepository: PriceCacheRepository
                                 )(using ec: ExecutionContext) extends AbstractController(cc):
 
     private val marketDataService: MarketDataService = createMarketDataService()
@@ -55,10 +61,20 @@ class StockController @Inject() (
                     .map(_.trim)
                     .filter(_.nonEmpty)
 
-                FinnhubMarketDataService(apiKey)
+                CachedMarketDataService(
+                    delegate = FinnhubMarketDataService(apiKey),
+                    priceCacheRepository = priceCacheRepository,
+                    ttl = cacheTtl
+                )
 
             case _ => MockMarketDataService()
         }
+
+    private def cacheTtl: FiniteDuration =
+        configuration
+          .getOptional[Int]("marketData.catheTtlSeconds")
+          .getOrElse(60)
+          .seconds
 
     private def stockToJson(stock: Stock): JsValue =
         Json.obj(
