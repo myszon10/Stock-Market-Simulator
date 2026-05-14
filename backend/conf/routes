@@ -9,3 +9,5 @@ POST    /api/auth/logout            controllers.AuthController.logout()
 
 GET     /api/stocks                 controllers.StockController.stocks()
 GET     /api/stocks/:symbol/quote   controllers.StockController.quote(symbol: String)
+
+POST    /api/orders/buy             controllers.OrderController.buy()

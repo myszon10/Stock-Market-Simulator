@@ -2,9 +2,14 @@ package repositories
 
 import models.Transaction
 
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.Inject
+import javax.inject.Singleton
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
-class TransactionRepository(implicit ec: ExecutionContext) {
+
+@Singleton
+class TransactionRepository @Inject()(implicit ec: ExecutionContext) {
   def create(transaction: Transaction): Future[Transaction] =
     Future.successful(transaction)
 }
