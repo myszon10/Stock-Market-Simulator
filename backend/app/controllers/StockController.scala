@@ -4,7 +4,6 @@ import controllers.actions.AuthenticatedAction
 import models.Quote
 import models.Stock
 import models.errors.MarketDataError
-import play.api.Configuration
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.mvc.AbstractController
@@ -12,28 +11,22 @@ import play.api.mvc.Action
 import play.api.mvc.AnyContent
 import play.api.mvc.ControllerComponents
 import play.api.mvc.Result
-import repositories.PriceCacheRepository
-import services.CachedMarketDataService
-import services.FinnhubMarketDataService
 import services.MarketDataService
-import services.MockMarketDataService
+import services.MarketDataServiceFactory
 import services.StockCatalog
 
-import java.util.Locale
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.duration.FiniteDuration
 
 
 class StockController @Inject() (
                                   cc: ControllerComponents,
-                                  configuration: Configuration,
                                   authenticatedAction: AuthenticatedAction,
-                                  priceCacheRepository: PriceCacheRepository
+                                  marketDataServiceFactory: MarketDataServiceFactory
                                 )(using ec: ExecutionContext) extends AbstractController(cc):
 
-    private val marketDataService: MarketDataService = createMarketDataService()
+    private val marketDataService: MarketDataService =
+        marketDataServiceFactory.get()
 
     def stocks(): Action[AnyContent] = authenticatedAction {
         Ok(Json.toJson(StockCatalog.all.map(stockToJson)))
@@ -45,36 +38,6 @@ class StockController @Inject() (
             case Left(error) => marketDataErrorToResult(error)
         }
     }
-
-    private def createMarketDataService(): MarketDataService =
-        val mode = configuration
-          .getOptional[String]("marketData.mode")
-          .getOrElse("mock")
-          .trim
-          .toLowerCase(Locale.ROOT)
-
-        mode match {
-            case "mock" => MockMarketDataService()
-            case "finnhub" =>
-                val apiKey = configuration
-                    .getOptional[String]("finnhub.apiKey")
-                    .map(_.trim)
-                    .filter(_.nonEmpty)
-
-                CachedMarketDataService(
-                    delegate = FinnhubMarketDataService(apiKey),
-                    priceCacheRepository = priceCacheRepository,
-                    ttl = cacheTtl
-                )
-
-            case _ => MockMarketDataService()
-        }
-
-    private def cacheTtl: FiniteDuration =
-        configuration
-          .getOptional[Int]("marketData.catheTtlSeconds")
-          .getOrElse(60)
-          .seconds
 
     private def stockToJson(stock: Stock): JsValue =
         Json.obj(
@@ -103,7 +66,7 @@ class StockController @Inject() (
                 ServiceUnavailable(
                     Json.obj(
                         "error" -> "QUOTE_NOT_AVAILABLE",
-                        "message" -> s"Quote for symbol '$symbol' is not available."
+                        "message" -> s"Quote for symbol $symbol is not available."
                     )
                 )
 
