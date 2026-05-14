@@ -2,9 +2,13 @@ package repositories
 
 import models.Holding
 
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.Inject
+import javax.inject.Singleton
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
-class HoldingRepository(implicit ec: ExecutionContext) {
+@Singleton
+class HoldingRepository @Inject()(implicit ec: ExecutionContext) {
   def findByUserAndSymbol(userId: Long, symbol: String): Future[Option[Holding]] =
     Future.successful(None)
 
