@@ -2,6 +2,7 @@ package controllers
 
 import controllers.actions.AuthenticatedAction
 import controllers.actions.UserRequest
+import services.MarketDataServiceFactory
 import org.scalatestplus.play.PlaySpec
 import models.Quote
 import repositories.PriceCacheRepository
@@ -39,10 +40,12 @@ class StockControllerSpec extends PlaySpec:
 
     private def controllerWith(configuration: Configuration): StockController =
         new StockController(
-            cc, 
-            configuration, 
+            cc,
             authAction,
-            new EmptyPriceCacheRepository()
+            new MarketDataServiceFactory(
+                configuration,
+                new EmptyPriceCacheRepository()
+            )
         )
 
     private def configuration(values: (String, String)*): Configuration =
@@ -161,5 +164,23 @@ class StockControllerSpec extends PlaySpec:
 
             (json \ "error").as[String] mustBe "MISSING_API_KEY"
             (json \ "message").as[String] mustBe "Market data API key is not configured."
+        }
+
+        "return readable 503 JSON when quote is not available from Finnhub" in {
+            val controller = controllerWith(
+                configuration(
+                    "marketData.mode" -> "finnhub",
+                    "finnhub.apiKey" -> "test-api-key"
+                )
+            )
+
+            val result = controller.quote("AAPL").apply(FakeRequest(GET, "/api/stock/AAPL/quote"))
+
+            status(result) mustBe SERVICE_UNAVAILABLE
+
+            val json = contentAsJson(result)
+
+            (json \ "error").as[String] must not be empty
+            (json \ "message").as[String] must not be empty
         }
     }
