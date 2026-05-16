@@ -38,7 +38,7 @@ class AuthController @Inject()(
       _ => Future.successful(BadRequest(Json.obj("error" -> "BAD_REQUEST", "message" -> "Invalid data."))),
       req => authService.login(req.username, req.password).map {
         case Right(user) =>
-          Ok(Json.toJson(LoginResponse(user.id, user.username)))
+          Ok(Json.toJson(LoginResponse(user.id, user.username, user.cashBalance)))
           .withSession("userId" -> user.id.toString, "username" -> user.username)
 
         case Left(AuthError.InvalidCredentials) =>

@@ -8,7 +8,7 @@ object RegisterResponse {
   implicit val format: OFormat[RegisterResponse] = Json.format[RegisterResponse]
 }
 
-case class LoginResponse(userId: Long, username: String)
+case class LoginResponse(userId: Long, username: String, cashBalance: BigDecimal)
 
 object LoginResponse {
   implicit val format: OFormat[LoginResponse] = Json.format[LoginResponse]
