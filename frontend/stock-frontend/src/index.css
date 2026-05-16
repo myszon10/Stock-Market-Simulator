@@ -10,6 +10,15 @@
   --danger: #ef4444;
   --warning: #f59e0b;
 
+  /* Modal variables added */
+  --bg-card: #ffffff;
+  --bg-dark: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --primary-color: #667eea;
+  --primary-hover: #5a67d8;
+
   --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
     Cantarell, sans-serif;
 

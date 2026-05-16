@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import AuthForm from './components/AuthForm';
 import Profile from './components/Profile';
 import StocksList from './components/StocksList';
-import './App.css';
+import TradeModal from './components/TradeModal';
+import TransactionHistory from './components/TransactionHistory';
 import { fetchStocks as fetchStocksApi } from './api/auth'; 
 import './App.css';
 
@@ -10,6 +11,8 @@ function App() {
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [stocks, setStocks] = useState([]);
   const [selectedStock, setSelectedStock] = useState(null);
+  const [txTrigger, setTxTrigger] = useState(0);
+  const [showHistory, setShowHistory] = useState(false);
 
   const handleAuthSuccess = (userData) => {
     setLoggedInUser(userData);
@@ -65,6 +68,9 @@ function App() {
       <header className="app-header">
         <div className="header-content">
           <h1 className="app-title">Stock Market Simulator</h1>
+          <button className="history-btn-toggle" onClick={() => setShowHistory(true)}>
+            Historia transakcji
+          </button>
         </div>
       </header>
 
@@ -81,6 +87,21 @@ function App() {
           )}
         </div>
       </main>
+
+      {showHistory && (
+        <TransactionHistory newTransactionsTrigger={txTrigger} onClose={() => setShowHistory(false)} />
+      )}
+
+      {selectedStock && (
+        <TradeModal 
+          stock={selectedStock} 
+          onClose={() => setSelectedStock(null)} 
+          onTradeSuccess={(tx) => {
+            setTxTrigger(prev => prev + 1);
+            // Tutaj można by zaktualizować loggedInUser w przyszłości (np. cashBalance)
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -22,10 +22,10 @@ export default function AuthForm({ onAuthSuccess }) {
       } else {
         userData = await registerUser(username, password);
       }
-      
+
       // Przekazanie danych użytkownika wyżej (np. do zapisu w kontekście)
       onAuthSuccess(userData);
-      
+
     } catch (err) {
       setError(err.message);
     } finally {

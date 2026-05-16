@@ -13,7 +13,7 @@ export default function StocksList({ stocks, onSelectStock }) {
 
     //   for (const stock of stocks) {
     //     try {
-    //       const response = await fetch(`http://localhost:9000/api/stocks/${stock.symbol}/quote`);
+    //       const response = await fetch(`/api/stocks/${stock.symbol}/quote`);
     //       const data = await response.json();
     //       priceMap[stock.symbol] = data.price;
     //     } catch (err) {
@@ -78,7 +78,7 @@ export default function StocksList({ stocks, onSelectStock }) {
 
             <button
               className="stock-btn"
-              onClick={() => onSelectStock(stock)}
+              onClick={() => onSelectStock({ ...stock, currentPrice: prices[stock.symbol] })}
               disabled={!prices[stock.symbol]}
             >
               Trade
