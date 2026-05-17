@@ -18,10 +18,19 @@ import repositories.UserRepository
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import play.api.db.Database
+import java.lang.reflect.Proxy
 
 class TradingServiceSpec extends AnyWordSpec with Matchers with ScalaFutures with EitherValues {
 
   private val now: Instant = Instant.parse("2026-05-14T12:00:00Z")
+
+  private val dummyDatabase: Database =
+    Proxy.newProxyInstance(
+      classOf[Database].getClassLoader,
+      Array(classOf[Database]),
+      (_, _, _) => throw new UnsupportedOperationException("Database should not be used in these tests")
+    ).asInstanceOf[Database]
 
   private class FakeMarketDataService(result: Either[MarketDataError, Quote]) extends MarketDataService {
     var requestedSymbols: List[String] = List.empty
@@ -32,7 +41,7 @@ class TradingServiceSpec extends AnyWordSpec with Matchers with ScalaFutures wit
     }
   }
 
-  private class FakeUserRepository(initialUser: Option[User]) extends UserRepository(null)(global) {
+  private class FakeUserRepository(initialUser: Option[User]) extends UserRepository(dummyDatabase)(global) {
     var requestedUserIds: List[Long] = List.empty
     var updatedBalances: List[(Long, BigDecimal)] = List.empty
 
@@ -62,7 +71,7 @@ class TradingServiceSpec extends AnyWordSpec with Matchers with ScalaFutures wit
     }
   }
 
-  private class FakeTransactionRepository extends TransactionRepository()(global) {
+  private class FakeTransactionRepository extends TransactionRepository(dummyDatabase)(global) {
     var savedTransactions: List[Transaction] = List.empty
 
     override def create(transaction: Transaction): Future[Transaction] = {

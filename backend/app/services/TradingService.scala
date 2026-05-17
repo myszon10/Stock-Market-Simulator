@@ -125,4 +125,8 @@ class TradingService(
 
   private def normalizeSymbol(symbol: String): String =
       symbol.trim.toUpperCase(Locale.ROOT)
-}
+
+  def getTransactionsForUser(userId: Long): Future[List[Transaction]] =
+    transactionRepository.findByUserId(userId)
+
+  }
