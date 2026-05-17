@@ -18,6 +18,7 @@ import services.TradingService
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import play.api.mvc.AnyContent
 
 class OrderController @Inject() (
                                 cc: ControllerComponents,
@@ -124,4 +125,23 @@ class OrderController @Inject() (
                     )
                 )
         }
+
+    def transactions(): Action[AnyContent] = authenticatedAction.async { request =>
+        tradingService.getTransactionsForUser(request.userId).map { transactions =>
+            Ok(
+                Json.toJson(
+                    transactions.map { t =>
+                        Json.obj(
+                            "id" -> t.id,
+                            "symbol" -> t.symbol,
+                            "side" -> t.side.toString.toUpperCase,
+                            "quantity" -> t.quantity,
+                            "price" -> t.price,
+                            "createdAt" -> t.createdAt.toString
+                        )
+                    }
+                )
+            )
+        }
+    }
 
