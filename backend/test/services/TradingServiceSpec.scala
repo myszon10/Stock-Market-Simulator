@@ -175,6 +175,40 @@ class TradingServiceSpec extends AnyWordSpec with Matchers with ScalaFutures wit
       transactionRepository.savedTransactions.map(_.price) mustBe List(BigDecimal("100.00"))
     }
 
+    "reject buy when user has insufficient cash" in {
+      val quote = Quote(
+        symbol = "AAPL",
+        price = BigDecimal("100.00"),
+        fetchedAt = now
+      )
+
+      val user = User(
+        id = 1L,
+        username = "user1",
+        passwordHash = "hash",
+        cashBalance = BigDecimal("50.00")
+      )
+
+      val marketDataService = new FakeMarketDataService(Right(quote))
+      val userRepository = new FakeUserRepository(Some(user))
+      val holdingRepository = new FakeHoldingRepository(None)
+      val transactionRepository = new FakeTransactionRepository
+
+      val service = serviceWith(
+        marketDataService,
+        userRepository,
+        holdingRepository,
+        transactionRepository
+      )
+
+      val result = service.buy(userId = 1L, symbol = "AAPL", quantity = 1).futureValue
+
+      result mustBe Left(TradingError.InsufficientCash)
+      userRepository.updatedBalances mustBe List.empty
+      holdingRepository.savedHoldings mustBe List.empty
+      transactionRepository.savedTransactions mustBe List.empty
+    }
+
     "not save transaction when price is unavailable" in {
       val marketDataService = new FakeMarketDataService(
         Left(MarketDataError.ExternalServiceUnavailable)
