@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { get } from '../api/client';
 import './StocksList.css';
 
 export default function StocksList({ stocks, onSelectStock }) {
@@ -6,53 +7,43 @@ export default function StocksList({ stocks, onSelectStock }) {
   const [prices, setPrices] = useState({});
 
   useEffect(() => {
-    // Fetch prices for each stock
+    if (stocks.length === 0) return;
+
+    let cancelled = false;
+
     const fetchPrices = async () => {
       setLoading(true);
-      const priceMap = {};
 
-    //   for (const stock of stocks) {
-    //     try {
-    //       const response = await fetch(`/api/stocks/${stock.symbol}/quote`);
-    //       const data = await response.json();
-    //       priceMap[stock.symbol] = data.price;
-    //     } catch (err) {
-    //       console.error(`Failed to fetch price for ${stock.symbol}`, err);
-    //       priceMap[stock.symbol] = 'N/A';
-    //     }
-    //   }
+      const results = await Promise.all(
+        stocks.map(async (stock) => {
+          try {
+            const quote = await get(`/api/stocks/${stock.symbol}/quote`);
+            return [stock.symbol, Number(quote.price)];
+          } catch (err) {
+            console.error(`Failed to fetch price for ${stock.symbol}`, err);
+            return [stock.symbol, 'N/A'];
+          }
+        })
+      );
 
-    //   setPrices(priceMap);
-    //   setLoading(false);
-    // };
+      if (cancelled) return;
 
-    for (const stock of stocks) {
-        try {
-          await new Promise(resolve => setTimeout(resolve, 500)); 
-          
-          const randomPrice = (Math.random() * 100 + 100).toFixed(2);
-          priceMap[stock.symbol] = parseFloat(randomPrice);
-          
-        } catch (err) {
-          console.error(`Failed to fetch price for ${stock.symbol}`, err);
-          priceMap[stock.symbol] = 'N/A';
-        }
-      }
-
-      setPrices(priceMap);
+      setPrices(Object.fromEntries(results));
       setLoading(false);
     };
 
-    if (stocks.length > 0) {
-      fetchPrices();
-    }
+    fetchPrices();
+
+    return () => {
+      cancelled = true;
+    };
   }, [stocks]);
 
   return (
     <div className="stocks-container">
-      <h2 className="stocks-title">Available Stocks</h2>
+      <h2 className="stocks-title">Dostępne akcje</h2>
 
-      {loading && <div className="loading">Loading prices...</div>}
+      {loading && <div className="loading">Ładowanie cen...</div>}
 
       <div className="stocks-grid">
         {stocks.map((stock) => (
@@ -72,16 +63,16 @@ export default function StocksList({ stocks, onSelectStock }) {
                   </span>
                 </>
               ) : (
-                <span className="price-loading">Loading...</span>
+                <span className="price-loading">Ładowanie...</span>
               )}
             </div>
 
             <button
               className="stock-btn"
               onClick={() => onSelectStock({ ...stock, currentPrice: prices[stock.symbol] })}
-              disabled={!prices[stock.symbol]}
+              disabled={!prices[stock.symbol] || prices[stock.symbol] === 'N/A'}
             >
-              Trade
+              Handluj
             </button>
           </div>
         ))}

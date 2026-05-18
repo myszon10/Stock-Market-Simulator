@@ -3,16 +3,14 @@ import { useState } from 'react';
 import { loginUser, registerUser } from '../api/auth';
 import './AuthForm.css';
 
-export default function AuthForm({ onAuthSuccess }) {
+export default function AuthForm({ onAuthSuccess, onError }) {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setIsLoading(true);
 
     try {
@@ -27,7 +25,9 @@ export default function AuthForm({ onAuthSuccess }) {
       onAuthSuccess(userData);
 
     } catch (err) {
-      setError(err.message);
+      if (onError) {
+        onError(err);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -45,12 +45,6 @@ export default function AuthForm({ onAuthSuccess }) {
           <h2 className="auth-card-title">
             {isLoginMode ? 'Zaloguj się' : 'Utwórz nowe konto'}
           </h2>
-
-          {error && (
-            <div className="error-message">
-              <span>{error}</span>
-            </div>
-          )}
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="input-group">
@@ -100,7 +94,6 @@ export default function AuthForm({ onAuthSuccess }) {
                 className="toggle-link"
                 onClick={() => {
                   setIsLoginMode(!isLoginMode);
-                  setError('');
                   setUsername('');
                   setPassword('');
                 }}
