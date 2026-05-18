@@ -2,10 +2,9 @@ import { useState, useEffect } from 'react';
 import { fetchTransactions } from '../api/trading';
 import './TransactionHistory.css';
 
-export default function TransactionHistory({ newTransactionsTrigger, onClose }) {
+export default function TransactionHistory({ newTransactionsTrigger, onClose, onError }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -14,21 +13,20 @@ export default function TransactionHistory({ newTransactionsTrigger, onClose }) 
         const data = await fetchTransactions();
         setTransactions(data);
       } catch (err) {
-        setError('Nie udało się załadować historii transakcji');
+        if (onError) {
+          onError(err);
+        }
+        setTransactions([]);
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, [newTransactionsTrigger]);
+  }, [newTransactionsTrigger, onError]);
 
   if (loading && transactions.length === 0) {
     return <div className="history-loading">Ładowanie historii...</div>;
-  }
-
-  if (error) {
-    return <div className="history-error">{error}</div>;
   }
 
   return (

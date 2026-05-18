@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { buyStock } from '../api/trading';
 import './TradeModal.css';
 
-export default function TradeModal({ stock, onClose, onTradeSuccess }) {
+export default function TradeModal({ stock, onClose, onTradeSuccess, onError }) {
   const [mode, setMode] = useState('buy'); // 'buy' or 'sell'
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -13,16 +13,20 @@ export default function TradeModal({ stock, onClose, onTradeSuccess }) {
       setError('Ilość musi być większa niż zero');
       return;
     }
-    
+
     setLoading(true);
     setError('');
 
     try {
-      const transaction = await buyStock(stock.symbol, parseInt(quantity, 10), stock.currentPrice);
+      const transaction = await buyStock(stock.symbol, parseInt(quantity, 10));
       onTradeSuccess(transaction);
       onClose();
     } catch (err) {
-      setError(err.message);
+      if (onError) {
+        onError(err);
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
