@@ -76,7 +76,7 @@ class TradingAndPortfolioServiceSpec extends AnyWordSpec with Matchers with Scal
   private class FakeHoldingRepository(
                                        initialHolding: Option[Holding] = None,
                                        initialHoldings: List[Holding] = List.empty
-                                     ) extends HoldingRepository()(global) {
+                                     ) extends HoldingRepository(dummyDatabase)(global) {
     var requestedHoldings: List[(Long, String)] = List.empty
     var savedHoldings: List[Holding] = List.empty
     var deletedHoldings: List[(Long, String)] = List.empty
