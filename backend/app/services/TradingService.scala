@@ -75,6 +75,63 @@ class TradingService(
     }
   }
 
+  def sell(userId: Long, symbol: String, quantity: Int): Future[Either[TradingError, Transaction]] = {
+    if (quantity <= 0) {
+      return Future.successful(Left(TradingError.InvalidQuantity))
+    }
+
+    val normalizedSymbol = normalizeSymbol(symbol)
+
+    marketDataService.getQuote(normalizedSymbol).flatMap {
+      case Left(error) =>
+        Future.successful(Left(marketDataErrorToTradingError(error, normalizedSymbol)))
+
+      case Right(quote) =>
+        userRepository.findById(userId).flatMap {
+          case None =>
+            Future.successful(Left(TradingError.UserNotFound))
+
+          case Some(user) =>
+            holdingRepository.findByUserAndSymbol(userId, normalizedSymbol).flatMap {
+              case None =>
+                Future.successful(Left(TradingError.InsufficientHoldings))
+
+              case Some(holding) if holding.quantity < quantity =>
+                Future.successful(Left(TradingError.InsufficientHoldings))
+
+              case Some(holding) =>
+                val sellValue = quote.price * BigDecimal(quantity)
+                val cashBalanceAfter = user.cashBalance + sellValue
+                val remainingQuantity = holding.quantity - quantity
+
+                val transaction = Transaction(
+                  id = 0L,
+                  userId = userId,
+                  symbol = normalizedSymbol,
+                  side = TransactionSide.Sell,
+                  quantity = quantity,
+                  price = quote.price,
+                  createdAt = Instant.now()
+                )
+
+                val updateHoldingFuture =
+                  if (remainingQuantity == 0)
+                    holdingRepository.delete(userId, normalizedSymbol)
+                  else
+                    holdingRepository.upsert(
+                      holding.copy(quantity = remainingQuantity)
+                    )
+
+                for {
+                  _ <- userRepository.updateCashBalance(userId, cashBalanceAfter)
+                  _ <- updateHoldingFuture
+                  savedTransaction <- transactionRepository.create(transaction)
+                } yield Right(savedTransaction): Either[TradingError, Transaction]
+            }
+        }
+    }
+  }
+
   private def calculateUpdatedHolding(
                                      userId: Long,
                                      symbol: String,
