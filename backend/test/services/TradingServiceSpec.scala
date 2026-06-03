@@ -56,7 +56,7 @@ class TradingServiceSpec extends AnyWordSpec with Matchers with ScalaFutures wit
     }
   }
 
-  private class FakeHoldingRepository(initialHolding: Option[Holding]) extends HoldingRepository()(global) {
+  private class FakeHoldingRepository(initialHolding: Option[Holding]) extends HoldingRepository(dummyDatabase)(global) {
     var requestedHoldings: List[(Long, String)] = List.empty
     var savedHoldings: List[Holding] = List.empty
 
