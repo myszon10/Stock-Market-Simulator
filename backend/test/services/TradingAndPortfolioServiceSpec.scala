@@ -58,7 +58,7 @@ class TradingAndPortfolioServiceSpec extends AnyWordSpec with Matchers with Scal
       new FakeMarketDataService(prices)
   }
 
-  private class FakeUserRepository(initialUser: Option[User]) extends UserRepository(dummyDatabase)(global) {
+  private class FakeUserRepository(initialUser: Option[User]) extends UserRepository(dummyDatabase)(using global) {
     var requestedUserIds: List[Long] = List.empty
     var updatedBalances: List[(Long, BigDecimal)] = List.empty
 
@@ -76,7 +76,7 @@ class TradingAndPortfolioServiceSpec extends AnyWordSpec with Matchers with Scal
   private class FakeHoldingRepository(
                                        initialHolding: Option[Holding] = None,
                                        initialHoldings: List[Holding] = List.empty
-                                     ) extends HoldingRepository(dummyDatabase)(global) {
+                                     ) extends HoldingRepository(dummyDatabase)(using global) {
     var requestedHoldings: List[(Long, String)] = List.empty
     var savedHoldings: List[Holding] = List.empty
     var deletedHoldings: List[(Long, String)] = List.empty
@@ -101,7 +101,7 @@ class TradingAndPortfolioServiceSpec extends AnyWordSpec with Matchers with Scal
     }
   }
 
-  private class FakeTransactionRepository extends TransactionRepository(dummyDatabase)(global) {
+  private class FakeTransactionRepository extends TransactionRepository(dummyDatabase)(using global) {
     var savedTransactions: List[Transaction] = List.empty
 
     override def create(transaction: Transaction): Future[Transaction] = {
@@ -122,7 +122,7 @@ class TradingAndPortfolioServiceSpec extends AnyWordSpec with Matchers with Scal
       userRepository,
       holdingRepository,
       transactionRepository
-    )(global)
+    )(using global)
 
   private def portfolioServiceWith(
                                     marketDataService: MarketDataService,
@@ -133,7 +133,7 @@ class TradingAndPortfolioServiceSpec extends AnyWordSpec with Matchers with Scal
       marketDataService,
       userRepository,
       holdingRepository
-    )(global)
+    )(using global)
 
   // ===========================================
   // TradingService.sell tests
