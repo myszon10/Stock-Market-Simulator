@@ -12,16 +12,16 @@ class LeaderboardService(
                         userRepository: UserRepository,
                         portfolioService: PortfolioService
                         )(implicit ec: ExecutionContext) {
-  
+
   def getLeaderboard(): Future[List[LeaderboardEntry]] = {
     userRepository.findAll().flatMap { users =>
       val entryFutures: List[Future[Option[LeaderboardEntry]]] = users.map { user =>
         createEntryForUser(user)
       }
-      
+
       Future.sequence(entryFutures).map { maybeEntries =>
         maybeEntries.flatten
-          .sortBy(_.totalAccountValue)(Ordering[BigDecimal].reverse)
+          .sortBy(_.totalAccountValue)(using Ordering[BigDecimal].reverse)
           .zipWithIndex
           .map { case (entry, index) =>
             entry.copy(rank = index + 1)
@@ -29,7 +29,7 @@ class LeaderboardService(
       }
     }
   }
-  
+
   private def createEntryForUser(user: User): Future[Option[LeaderboardEntry]] = {
     portfolioService.getPortfolio(user.id).map {
       case Right(portfolio) =>
@@ -46,7 +46,7 @@ class LeaderboardService(
         None
     }
   }
-  
+
   private def calculateProfitLoss(portfolio: Portfolio): BigDecimal =
     portfolio.positions
       .map(_.profitLoss)
