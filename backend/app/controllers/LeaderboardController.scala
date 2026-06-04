@@ -34,7 +34,7 @@ class LeaderboardController @Inject()(
     portfolioService = portfolioService
   )
 
-  def leaderboard(): Action[AnyContent] = authenticatedAction.async {
+  def leaderboard(): Action[AnyContent] = authenticatedAction.async { _ =>
     leaderboardService.getLeaderboard().map { entries =>
       Ok(Json.toJson(entries))
     }
