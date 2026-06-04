@@ -56,6 +56,16 @@ class UserRepository @Inject()(db: Database)(implicit ec: ExecutionContext) {
       SQL"SELECT * FROM users WHERE username = $username".as(userParser.singleOpt)
     }
   }
+  
+  def findAll(): Future[List[User]] = Future {
+    db.withConnection { implicit connection =>
+      SQL"""
+      SELECT id, username, password_hash, cash_balance
+      FROM users
+      ORDER BY id
+      """.as(userParser.*)
+    }
+  }
 
   def existsByUsername(username: String): Future[Boolean] = Future {
     db.withConnection { implicit connection =>
