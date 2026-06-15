@@ -82,19 +82,19 @@ class LeaderboardServiceSpec extends AnyWordSpec with Matchers with ScalaFutures
           id = 1L,
           username = "user-low",
           passwordHash = "hash",
-          cashBalance = BigDecimal("1000.00")
+          cashBalance = BigDecimal("99900.00")
         ),
         User(
           id = 2L,
           username = "user-high",
           passwordHash = "hash",
-          cashBalance = BigDecimal("5000.00")
+          cashBalance = BigDecimal("96000.00")
         ),
         User(
           id = 3L,
           username = "user-middle",
           passwordHash = "hash",
-          cashBalance = BigDecimal("3000.00")
+          cashBalance = BigDecimal("99600.00")
         )
       )
 
@@ -142,9 +142,9 @@ class LeaderboardServiceSpec extends AnyWordSpec with Matchers with ScalaFutures
       result.map(_.username) mustBe List("user-high", "user-middle", "user-low")
       result.map(_.rank) mustBe List(1, 2, 3)
       result.map(_.totalAccountValue) mustBe List(
-        BigDecimal("9200.00"),
-        BigDecimal("3500.00"),
-        BigDecimal("1150.00")
+        BigDecimal("100200.00"),
+        BigDecimal("100100.00"),
+        BigDecimal("100050.00")
       )
       result.map(_.profitLoss) mustBe List(
         BigDecimal("200.00"),
