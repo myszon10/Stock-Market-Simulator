@@ -27,6 +27,8 @@ class MarketDataServiceFactory @Inject() (
           .trim
           .toLowerCase(Locale.ROOT)
 
+        println(s"[MarketData] Selected mode: $mode")
+
         mode match {
             case "mock" =>
                 MockMarketDataService()
