@@ -23,6 +23,10 @@ class AuthController @Inject()(
       req => authService.register(req.username, req.password).map {
         case Right(user) =>
           Created(Json.toJson(RegisterResponse(user.id, user.username, user.cashBalance)))
+            .withSession(
+              "userId" -> user.id.toString,
+              "username" -> user.username
+            )
 
         case Left(AuthError.UserAlreadyExists) =>
           Conflict(Json.obj("error" -> "USER_ALREADY_EXISTS", "message" -> "User already exists."))

@@ -13,6 +13,8 @@ class LeaderboardService(
                         portfolioService: PortfolioService
                         )(implicit ec: ExecutionContext) {
 
+  private val initialBalance = BigDecimal("100000.00")
+
   def getLeaderboard(): Future[List[LeaderboardEntry]] = {
     userRepository.findAll().flatMap { users =>
       val entryFutures: List[Future[Option[LeaderboardEntry]]] = users.map { user =>
@@ -48,7 +50,5 @@ class LeaderboardService(
   }
 
   private def calculateProfitLoss(portfolio: Portfolio): BigDecimal =
-    portfolio.positions
-      .map(_.profitLoss)
-      .foldLeft(BigDecimal(0))(_ + _)
+    portfolio.totalAccountValue - initialBalance
 }
