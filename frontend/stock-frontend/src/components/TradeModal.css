@@ -194,7 +194,8 @@
 }
 
 .modal-btn-cancel,
-.modal-btn-buy {
+.modal-btn-buy,
+.modal-btn-sell {
   flex: 1;
   padding: 12px;
   border-radius: 8px;

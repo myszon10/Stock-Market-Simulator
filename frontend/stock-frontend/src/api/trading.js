@@ -35,3 +35,8 @@ export const fetchTransactions = async () => {
     };
   });
 };
+
+// Backend `GET /api/leaderboard` — zwraca ranking użytkowników wg totalAccountValue.
+export const fetchLeaderboard = async () => {
+  return get('/api/leaderboard');
+};
