@@ -62,6 +62,32 @@ class OrderController @Inject() (
         }
     }
 
+    def sell(): Action[JsValue] = authenticatedAction.async(parse.json) { request =>
+        val symbolResult = (request.body \ "symbol").validate[String]
+        val quantityResult = (request.body \ "quantity").validate[Int]
+
+        (symbolResult.asOpt, quantityResult.asOpt) match {
+            case (Some(symbol), Some(quantity)) =>
+                tradingService.sell(request.userId, symbol, quantity).map {
+                    case Right(transaction) =>
+                        Created(transactionToJson(transaction))
+
+                    case Left(error) =>
+                        tradingErrorToResult(error)
+                }
+
+            case _ =>
+                Future.successful(
+                    BadRequest(
+                        Json.obj(
+                            "error" -> "INVALID_ORDER_REQUEST",
+                            "message" -> "Request must contain symbol and quantity."
+                        )
+                    )
+                )
+        }
+    }
+
     private def transactionToJson(transaction: Transaction): JsValue =
         val total = transaction.price * BigDecimal(transaction.quantity)
 

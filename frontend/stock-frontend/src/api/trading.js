@@ -7,6 +7,16 @@ export const buyStock = async (symbol, quantity) => {
   return post('/api/orders/buy', { symbol, quantity });
 };
 
+// Backend `POST /api/orders/sell` — sprzedaż akcji z bieżącą ceną rynkową.
+export const sellStock = async (symbol, quantity) => {
+  return post('/api/orders/sell', { symbol, quantity });
+};
+
+// Backend `GET /api/portfolio` — zwraca cashBalance, positions[], totalStockValue, totalAccountValue.
+export const fetchPortfolio = async () => {
+  return get('/api/portfolio');
+};
+
 // Backend `GET /api/transactions` zwraca {id, symbol, side, quantity, price, createdAt}.
 // UI używa pól transactionId i total, więc je dopełniamy w jednym miejscu.
 export const fetchTransactions = async () => {
@@ -24,4 +34,9 @@ export const fetchTransactions = async () => {
       createdAt: tx.createdAt,
     };
   });
+};
+
+// Backend `GET /api/leaderboard` — zwraca ranking użytkowników wg totalAccountValue.
+export const fetchLeaderboard = async () => {
+  return get('/api/leaderboard');
 };

@@ -38,19 +38,35 @@ body {
   align-items: center;
 }
 
-.history-btn-toggle {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.header-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   color: white;
   padding: 8px 16px;
   border-radius: 8px;
   font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(4px);
 }
 
-.history-btn-toggle:hover {
+.header-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.header-btn-active {
   background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .app-title {
@@ -90,7 +106,22 @@ body {
   }
 
   .app-title {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .header-btn {
+    font-size: 0.8rem;
+    padding: 6px 12px;
   }
 
   .app-main {
@@ -104,10 +135,20 @@ body {
 
 @media (max-width: 480px) {
   .app-title {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
 
   .app-main {
     padding: 0.75rem;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .header-btn {
+    width: 100%;
+    text-align: center;
   }
 }

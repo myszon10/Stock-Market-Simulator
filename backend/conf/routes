@@ -11,5 +11,9 @@ GET     /api/stocks                 controllers.StockController.stocks()
 GET     /api/stocks/:symbol/quote   controllers.StockController.quote(symbol: String)
 
 POST    /api/orders/buy             controllers.OrderController.buy()
+POST    /api/orders/sell            controllers.OrderController.sell()
+
+GET     /api/portfolio              controllers.PortfolioController.portfolio()
+GET     /api/leaderboard            controllers.LeaderboardController.leaderboard()
 
 GET   /api/transactions             controllers.OrderController.transactions()

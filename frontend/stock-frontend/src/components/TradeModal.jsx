@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { buyStock } from '../api/trading';
+import { buyStock, sellStock } from '../api/trading';
 import './TradeModal.css';
 
-export default function TradeModal({ stock, onClose, onTradeSuccess, onError }) {
-  const [mode, setMode] = useState('buy'); // 'buy' or 'sell'
+export default function TradeModal({ stock, onClose, onTradeSuccess, onError, initialMode }) {
+  const [mode, setMode] = useState(initialMode || 'buy'); // 'buy' or 'sell'
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const ownedQuantity = stock.ownedQuantity || 0;
 
   const handleBuy = async () => {
     if (quantity <= 0) {
@@ -33,8 +35,33 @@ export default function TradeModal({ stock, onClose, onTradeSuccess, onError }) 
   };
 
   const handleSell = async () => {
-    // Na razie mock - bez implementacji
-    setError('Opcja sprzedaży nie jest jeszcze zaimplementowana.');
+    const qty = parseInt(quantity, 10);
+    if (qty <= 0) {
+      setError('Ilość musi być większa niż zero');
+      return;
+    }
+
+    if (ownedQuantity > 0 && qty > ownedQuantity) {
+      setError(`Posiadasz tylko ${ownedQuantity} szt. tej akcji.`);
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const transaction = await sellStock(stock.symbol, qty);
+      onTradeSuccess(transaction);
+      onClose();
+    } catch (err) {
+      if (onError) {
+        onError(err);
+      } else {
+        setError(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const totalValue = (quantity * stock.currentPrice).toFixed(2);
@@ -69,14 +96,33 @@ export default function TradeModal({ stock, onClose, onTradeSuccess, onError }) 
           <strong>${stock.currentPrice.toFixed(2)}</strong>
         </div>
 
+        {mode === 'sell' && ownedQuantity > 0 && (
+          <div className="modal-holdings-info">
+            <span>Posiadane akcje:</span>
+            <strong>{ownedQuantity} szt.</strong>
+          </div>
+        )}
+
         {error && <div className="modal-error">{error}</div>}
 
         <div className="modal-input-group">
-          <label htmlFor="quantity">Ilość akcji</label>
+          <label htmlFor="quantity">
+            Ilość akcji
+            {mode === 'sell' && ownedQuantity > 0 && (
+              <button
+                type="button"
+                className="modal-max-btn"
+                onClick={() => setQuantity(ownedQuantity)}
+              >
+                MAX
+              </button>
+            )}
+          </label>
           <input
             type="number"
             id="quantity"
             min="1"
+            max={mode === 'sell' && ownedQuantity > 0 ? ownedQuantity : undefined}
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
           />
@@ -97,7 +143,7 @@ export default function TradeModal({ stock, onClose, onTradeSuccess, onError }) 
             </button>
           ) : (
             <button className="modal-btn-sell" onClick={handleSell} disabled={loading}>
-              Sprzedaj
+              {loading ? <span className="modal-spinner"></span> : 'Sprzedaj'}
             </button>
           )}
         </div>

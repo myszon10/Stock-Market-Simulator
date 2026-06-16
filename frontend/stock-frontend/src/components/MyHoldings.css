@@ -1,0 +1,192 @@
+/* src/components/MyHoldings.css */
+.my-holdings-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.my-holdings-title {
+  margin: 0 0 2rem 0;
+  color: #1f2937;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.my-holdings-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.my-holdings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.holding-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(100, 116, 139, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.holding-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(102, 126, 234, 0.15);
+}
+
+.holding-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.holding-card-symbol {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.holding-card-quantity {
+  background: rgba(102, 126, 234, 0.12);
+  color: #667eea;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.holding-card-prices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.holding-card-price-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.holding-card-price-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 600;
+}
+
+.holding-card-price-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.holding-card-divider {
+  height: 1px;
+  background: rgba(100, 116, 139, 0.15);
+  margin: 0.25rem 0;
+}
+
+.holding-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.holding-card-value {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.holding-card-value-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 600;
+}
+
+.holding-card-value-amount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.holding-card-pl {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.holding-card-pl-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 600;
+}
+
+.holding-card-pl-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.holding-card-pl-value.profit {
+  color: #10b981;
+}
+
+.holding-card-pl-value.loss {
+  color: #ef4444;
+}
+
+.holding-sell-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.25rem;
+  width: 100%;
+}
+
+.holding-sell-btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+}
+
+.holding-sell-btn:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 768px) {
+  .my-holdings-container {
+    padding: 1.5rem;
+  }
+
+  .my-holdings-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .holding-card {
+    padding: 1rem;
+  }
+
+  .holding-card-symbol {
+    font-size: 1.25rem;
+  }
+}

@@ -10,7 +10,7 @@ class AuthControllerSpec extends BaseIntegrationSpec {
 
   "AuthController" should {
 
-    "successfully register a new user and return 201 Created" in {
+    "successfully register a new user, return 201 Created and set a session" in {
       val requestBody = Json.obj(
         "username" -> "demo_register",
         "password" -> "password123"
@@ -20,9 +20,13 @@ class AuthControllerSpec extends BaseIntegrationSpec {
       val result = route(app, request).get
 
       status(result) mustBe CREATED
+
       val json = contentAsJson(result)
       (json \ "username").as[String] mustBe "demo_register"
       (json \ "cashBalance").as[BigDecimal] mustBe BigDecimal("100000.00")
+
+      session(result).get("userId") mustBe defined
+      session(result).get("username").value mustBe "demo_register"
     }
 
     "return 409 Conflict when trying to register an existing username" in {

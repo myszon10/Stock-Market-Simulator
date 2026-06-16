@@ -41,7 +41,7 @@ class TradingServiceSpec extends AnyWordSpec with Matchers with ScalaFutures wit
     }
   }
 
-  private class FakeUserRepository(initialUser: Option[User]) extends UserRepository(dummyDatabase)(global) {
+  private class FakeUserRepository(initialUser: Option[User]) extends UserRepository(dummyDatabase)(using global) {
     var requestedUserIds: List[Long] = List.empty
     var updatedBalances: List[(Long, BigDecimal)] = List.empty
 
@@ -56,7 +56,7 @@ class TradingServiceSpec extends AnyWordSpec with Matchers with ScalaFutures wit
     }
   }
 
-  private class FakeHoldingRepository(initialHolding: Option[Holding]) extends HoldingRepository()(global) {
+  private class FakeHoldingRepository(initialHolding: Option[Holding]) extends HoldingRepository(dummyDatabase)(using global) {
     var requestedHoldings: List[(Long, String)] = List.empty
     var savedHoldings: List[Holding] = List.empty
 
@@ -71,7 +71,7 @@ class TradingServiceSpec extends AnyWordSpec with Matchers with ScalaFutures wit
     }
   }
 
-  private class FakeTransactionRepository extends TransactionRepository(dummyDatabase)(global) {
+  private class FakeTransactionRepository extends TransactionRepository(dummyDatabase)(using global) {
     var savedTransactions: List[Transaction] = List.empty
 
     override def create(transaction: Transaction): Future[Transaction] = {
@@ -92,7 +92,7 @@ class TradingServiceSpec extends AnyWordSpec with Matchers with ScalaFutures wit
       userRepository,
       holdingRepository,
       transactionRepository
-    )(global)
+    )(using global)
 
   "TradingService.buy" should {
     "return InvalidQuantity when quantity <= 0 without requesting price" in {
