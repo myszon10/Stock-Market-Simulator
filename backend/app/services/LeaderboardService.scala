@@ -2,7 +2,7 @@ package services
 
 import models.Portfolio
 import models.User
-import models.dto.leaderboard.LeaderboardEntry
+import models.dto.leaderboard.{LeaderboardEntry, LeaderboardPosition}
 import repositories.UserRepository
 
 import scala.concurrent.ExecutionContext
@@ -35,12 +35,23 @@ class LeaderboardService(
   private def createEntryForUser(user: User): Future[Option[LeaderboardEntry]] = {
     portfolioService.getPortfolio(user.id).map {
       case Right(portfolio) =>
+        val positions = portfolio.positions.map { pos =>
+          LeaderboardPosition(
+            symbol = pos.symbol,
+            quantity = pos.quantity,
+            currentPrice = pos.currentPrice,
+            currentValue = pos.currentValue,
+            profitLoss = pos.profitLoss
+          )
+        }
+
         Some(
           LeaderboardEntry(
             rank = 0,
             username = user.username,
             totalAccountValue = portfolio.totalAccountValue,
-            profitLoss = calculateProfitLoss(portfolio)
+            profitLoss = calculateProfitLoss(portfolio),
+            positions = positions
           )
         )
 

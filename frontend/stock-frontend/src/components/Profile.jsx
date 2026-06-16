@@ -34,17 +34,22 @@ export default function Profile({ user, portfolio, onLogout }) {
 
       <div className="profile-stats">
         <div className="stat-box">
-          <div className="stat-label">Cash Balance</div>
+          <div className="stat-label">Gotówka</div>
           <div className="stat-value">${formatCurrency(cashBalance)}</div>
           <div className="stat-unit">USD</div>
         </div>
         <div className="stat-box">
-          <div className="stat-label">Total Portfolio Value</div>
+          <div className="stat-label">Wartość akcji</div>
+          <div className="stat-value">${formatCurrency(totalStockValue)}</div>
+          <div className="stat-unit">USD</div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-label">Całkowita wartość konta</div>
           <div className="stat-value">${formatCurrency(totalAccountValue)}</div>
           <div className="stat-unit">USD</div>
         </div>
         <div className="stat-box">
-          <div className="stat-label">Profit/Loss</div>
+          <div className="stat-label">Zysk / Strata</div>
           <div className={`stat-value ${totalProfitLoss >= 0 ? 'profit-neutral' : 'profit-loss'}`}>
             {totalProfitLoss >= 0 ? '+' : ''}${formatCurrency(totalProfitLoss)}
           </div>

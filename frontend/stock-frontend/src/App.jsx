@@ -5,6 +5,7 @@ import StocksList from './components/StocksList';
 import MyHoldings from './components/MyHoldings';
 import TradeModal from './components/TradeModal';
 import TransactionHistory from './components/TransactionHistory';
+import Leaderboard from './components/Leaderboard';
 import ErrorPopup from './components/ErrorPopup';
 import { fetchStocks as fetchStocksApi, logoutUser } from './api/auth';
 import { fetchPortfolio } from './api/trading';
@@ -20,6 +21,7 @@ function App() {
   const [tradeMode, setTradeMode] = useState('buy');
   const [txTrigger, setTxTrigger] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [globalError, setGlobalError] = useState(null);
 
   const reportError = useCallback((err) => setGlobalError(formatApiError(err)), []);
@@ -31,6 +33,7 @@ function App() {
     setPortfolio(null);
     setSelectedStock(null);
     setShowHistory(false);
+    setShowLeaderboard(false);
     localStorage.removeItem('user');
   };
 
@@ -124,15 +127,30 @@ function App() {
       <header className="app-header">
         <div className="header-content">
           <h1 className="app-title">Stock Market Simulator</h1>
-          <button className="history-btn-toggle" onClick={() => setShowHistory(true)}>
-            Historia transakcji
-          </button>
+          <div className="header-actions">
+            <button
+              className={`header-btn ${showLeaderboard ? 'header-btn-active' : ''}`}
+              onClick={() => setShowLeaderboard(!showLeaderboard)}
+            >
+              🏆 Leaderboard
+            </button>
+            <button className="header-btn" onClick={() => setShowHistory(true)}>
+              📋 Historia transakcji
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="app-main">
         <div className="dashboard">
           <Profile user={loggedInUser} portfolio={portfolio} onLogout={handleLogout} />
+
+          {showLeaderboard && (
+            <Leaderboard
+              currentUserId={loggedInUser.userId}
+              onError={reportError}
+            />
+          )}
 
           {stocks.length > 0 && (
             <StocksList stocks={stocks} onSelectStock={handleBuyFromList} />
