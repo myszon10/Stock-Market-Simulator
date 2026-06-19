@@ -1,102 +1,139 @@
-# Stock-Market-Simulator
-Stock market simulator built as a group project for the Scala programming course.
+# Stock Market Simulator
 
-The application allows users to simulate investing in stocks using virtual money. It focuses on a basic portfolio flow: user account, starting balance, stock prices, buy/sell orders, portfolio, transaction history and leaderboard.
+A full-stack web application for simulating stock market investments using virtual money. The project was developed as a group assignment for the Scala Programming course at Warsaw University of Technology.
 
+Each user starts with **$100,000** and can build a portfolio by trading stocks, tracking performance and competing with other players on the leaderboard.
 
-## Team
-- Szymon Mażulis
-- Bartosz Radomski
-- Igor Oleksy
-- Maciej Rozpędek
-- Jakub Warkocki
+## Features
 
-## Tech stack
-- Scala
-- Play Framework
-- sbt
-- PostgreSQL
-- React/Vite frontend
+* User registration, login and session-based authentication
+* Virtual starting balance of $100,000
+* Stock quotes for 10 supported companies
+* Buy and sell orders with balance and quantity validation
+* Portfolio overview with:
 
-## Project structure
-```text
-backend/ - Scala Play backend
-frontend/stock-frontend/ - React frontend
+  * available cash
+  * current stock value
+  * total account value
+  * profit and loss
+  * average purchase prices
+* Complete transaction history
+* Leaderboard ranked by total account value
+* Mock market data mode for reliable local demos
+* Optional live prices from the Finnhub API
+* Database-backed market price cache
+
+## Tech Stack
+
+**Backend**
+
+* Scala 3
+* Play Framework
+* sbt
+* PostgreSQL
+* Anorm
+
+**Frontend**
+
+* React
+* Vite
+* JavaScript
+
+**Tools**
+
+* Docker Compose
+* GitHub Actions
+* ScalaTest
+
+## Project Structure
+
+```
+backend/                  Scala and Play backend
+frontend/stock-frontend/ React and Vite frontend
 ```
 
-## Backend setup
-Start the database:
-```bash
+## Running the Application
+
+### Requirements
+
+* Java and sbt
+* Node.js and npm
+* Docker with Docker Compose
+
+### 1. Start the database
+
+From the project root:
+
+```
 cd backend
 docker compose up -d
 ```
 
-Run the backend:
-```bash
+PostgreSQL will be available on port `5433`. Database migrations are applied automatically when the backend starts.
+
+### 2. Start the backend
+
+While still inside the `backend` directory:
+
+```
 sbt run
 ```
 
-The backend runs on:
+The backend will run at:
+
 ```
 http://localhost:9000
 ```
 
-Default database configuration:
-```
-DB_URL=jdbc:postgresql://localhost:5432/stock_market
-DB_USER=simulator_user
-DB_PASSWORD=simulator_pass
-```
+By default, the application uses mock market data and does not require an API key.
 
-## Market data mode
-The backend supports two market data modes:
-```
-mock
-finnhub
-```
+### 3. Start the frontend
 
-The mode is configured with `MARKET_DATA_MODE`
+In a separate terminal:
 
-Mock mode is the default and does not require an API key. It is recommended for local development and demo presentations.
-
-PowerShell:
-```PowerShell
-$env:MARKET_DATA_MODE="mock"
 ```
-Bash:
-```bash
-export MARKET_DATA_MODE="mock"
-sbt run
-```
-
-Finnhub mode requires an API key:
-Powershell:
-```PowerShell
-$env:MARKET_DATA_MODE="finnhub"
-$env:FINNHUB_API_KEY="your_api_key_here"
-sbt run
-```
-Bash:
-```bash
-export MARKET_DATA_MODE="finnhub"
-export FINNHUB_API_KEY="your_api_key_here"
-sbt run
-```
-
-## Frontend setup
-
-```bash
 cd frontend/stock-frontend
 npm install
 npm run dev
 ```
 
+Open the application at:
+
+```
+http://localhost:5173
+```
+
+## Market Data Configuration
+
+The backend supports two market data modes:
+
+* `mock` – fixed local prices, recommended for development and presentations
+* `finnhub` – live market prices retrieved from the Finnhub API
+
+To use live prices, create a `backend/.env` file:
+
+```
+MARKET_DATA_MODE=finnhub
+FINNHUB_API_KEY=your_api_key
+MARKET_DATA_CACHE_TTL_SECONDS=60
+```
+
+The `.env` file is ignored by Git and should never be committed.
+
 ## Tests
-Run all backend tests:
-```bash
-cd backend
+
+Run the backend test suite from the `backend` directory:
+
+```
 sbt test
 ```
 
-## Status
-Project is currently in development
+Backend tests are also executed automatically by the GitHub Actions CI pipeline.
+
+## Team
+
+* Szymon Mażulis
+* Bartosz Radomski
+* Igor Oleksy
+* Maciej Rozpędek
+* Jakub Warkocki
